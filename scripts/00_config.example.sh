@@ -39,11 +39,10 @@ REF_DIR="$REPO_ROOT/reference/$REF_BUILD"
 # Set the FASTA file per build (adjust names to what you actually place in reference/)
 case "$REF_BUILD" in
   GRCh37)
-    REFERENCE_FASTA="$REF_DIR/human_g1k_v37.fasta"  # e.g., from 1000G
+    REFERENCE_FASTA="$REF_DIR/reference.fa"
     ;;
   GRCh38)
-    # Example: NCBI no-alt analysis set with UCSC-style IDs; ensure it matches your manifest naming
-    REFERENCE_FASTA="$REF_DIR/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
+    REFERENCE_FASTA="$REF_DIR/reference.fa"
     ;;
   *)
     echo "[ERROR] Unknown REF_BUILD: $REF_BUILD" >&2; exit 1;;
