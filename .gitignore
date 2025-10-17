@@ -1,0 +1,74 @@
+# ==============================
+# Keep code/docs; ignore data/outputs
+# ==============================
+
+# ---- Raw inputs (private/large) ----
+input_data/
+!input_data/README.md
+!input_data/sample_sheet/template.SampleSheet.csv
+*.idat
+*.gtc
+*.bpm
+*.egt
+
+# ---- Reference genomes & indexes ----
+reference/
+!reference/README.md
+*.fa*
+*.fasta*
+*.fna*
+*.fai
+*.dict
+*.gzi
+*.amb
+*.ann
+*.bwt
+*.pac
+*.sa
+*.bt2*
+*.ht2
+*.mmi
+*.min
+*.bai
+*.crai
+*.tbi
+*.csi
+
+# ---- Outputs from any run ----
+output/
+!output/README.md
+*.vcf*
+*.bcf*
+*.bed
+*.bim
+*.fam
+*.pgen
+*.pvar
+*.psam
+*.log
+*.seg
+*.cns
+*.cnr
+
+# ---- Scratch ----
+tmp/
+scratch/
+*.tmp
+*.temp
+*.cache
+
+# ---- OS/dev noise ----
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+.Rhistory
+.Rproj.user/
+.vscode/
+.idea/
