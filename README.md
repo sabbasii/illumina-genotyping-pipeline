@@ -10,3 +10,7 @@ Linux-native, POSIX-compatible pipeline intended to run on WSL, native Linux, an
 ## Environments
 - WSL2 (Ubuntu), native Linux, macOS (zsh/bash)
 - Dependencies will be listed in `docs/requirements.md` (to be added)
+
+---
+
+**License:** MIT (code). Data and third-party tools are not included.
