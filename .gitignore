@@ -72,3 +72,5 @@ venv/
 .Rproj.user/
 .vscode/
 .idea/
+
+scripts/00_config.sh
