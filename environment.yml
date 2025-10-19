@@ -1,14 +1,14 @@
 name: array-pipeline
 channels:
-  - conda-forge
   - bioconda
+  - conda-forge
+  - defaults
 dependencies:
   - bcftools=1.22
-  - htslib=1.22
-  - vcftools=0.1.17
-  - samtools=1.20
+  - bcftools-gtc2vcf-plugin=1.22
+  - htslib=1.22.1
+  - samtools
   - plink2
+  - zlib
+  - xz
   - pigz
-  - wget
-  - python=3.11
-  - pip

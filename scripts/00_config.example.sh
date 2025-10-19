@@ -85,34 +85,119 @@ TAGS_BCF="$VCF_DIR/tmp.tags.bcf"
 ############################################
 # Tooling helpers (no hard exits here)
 ############################################
+# ---------- Environment & plugin setup ----------
 activate_env() {
-  # If you use conda, ensure the env is active; otherwise no-op
-  # Optionally enforce a specific env name by uncommenting the next lines:
+  # Optional: enforce a specific conda env name (uncomment to warn)
   # if [ "${CONDA_DEFAULT_ENV:-}" != "array-pipeline" ]; then
-  #   echo "[WARN] Not in 'array-pipeline' env; current: ${CONDA_DEFAULT_ENV:-<none>}"; fi
+  #   echo "[WARN] Not in 'array-pipeline' env; current: ${CONDA_DEFAULT_ENV:-<none>} (this is OK if tools are available)" >&2
+  # fi
 
-  # Try to set bcftools plugin path if not already set
-  if [ -z "${BCFTOOLS_PLUGINS:-}" ] && [ -n "${CONDA_PREFIX:-}" ]; then
-    for p in "$CONDA_PREFIX/libexec/bcftools" "$CONDA_PREFIX/lib/bcftools/plugins" "$CONDA_PREFIX/share/bcftools/plugins"; do
-      [ -d "$p" ] && export BCFTOOLS_PLUGINS="$p" && break
-    done
+  # 0) bcftools present?
+  if ! command -v bcftools >/dev/null 2>&1; then
+    echo "[ERROR] 'bcftools' not found on PATH. Activate your env (e.g., 'conda activate array-pipeline') or install bcftools." >&2
+    return 1
   fi
+
+  # If BCFTOOLS_PLUGINS already points to a valid gtc2vcf.so, we're done
+  if [ -n "${BCFTOOLS_PLUGINS:-}" ] && [ -f "$BCFTOOLS_PLUGINS/gtc2vcf.so" ]; then
+    return 0
+  fi
+
+  # 1) Build candidate plugin paths
+  local candidates=()
+  # Conda-style locations
+  if [ -n "${CONDA_PREFIX:-}" ]; then
+    candidates+=("$CONDA_PREFIX/libexec/bcftools")
+    candidates+=("$CONDA_PREFIX/lib/bcftools/plugins")
+    candidates+=("$CONDA_PREFIX/share/bcftools/plugins")
+  fi
+  # Paths relative to the bcftools binary (covers Homebrew/system installs)
+  local bcftools_bin bcftools_root
+  bcftools_bin="$(command -v bcftools)"
+  if [ -n "$bcftools_bin" ]; then
+    # Typically .../bin/bcftools → root = one dir up
+    bcftools_root="$(cd -- "$(dirname -- "$bcftools_bin")/.." && pwd -P 2>/dev/null || true)"
+    if [ -n "$bcftools_root" ]; then
+      candidates+=("$bcftools_root/libexec/bcftools")
+      candidates+=("$bcftools_root/lib/bcftools/plugins")
+      candidates+=("$bcftools_root/share/bcftools/plugins")
+    fi
+  fi
+  # Common system-wide fallbacks
+  candidates+=("/usr/local/libexec/bcftools" "/usr/local/lib/bcftools/plugins" "/usr/local/share/bcftools/plugins")
+  candidates+=("/usr/libexec/bcftools" "/usr/lib/bcftools/plugins" "/usr/share/bcftools/plugins")
+
+  # 2) Pick the first candidate that actually contains gtc2vcf.so
+  local p found=""
+  for p in "${candidates[@]}"; do
+    if [ -f "$p/gtc2vcf.so" ]; then
+      found="$p"
+      break
+    fi
+  done
+
+  if [ -n "$found" ]; then
+    export BCFTOOLS_PLUGINS="$found"
+    return 0
+  fi
+
+  # 3) As a last resort, see if bcftools can load by name (+gtc2vcf). If yes, we don't need BCFTOOLS_PLUGINS.
+  if bcftools +gtc2vcf -h >/dev/null 2>&1; then
+    # Works without setting BCFTOOLS_PLUGINS (some builds bake it in)
+    return 0
+  fi
+
+  # 4) If we got here, plugin is missing or not discoverable
+  echo "[ERROR] bcftools plugin 'gtc2vcf' not found." >&2
+  echo "        Looked in:" >&2
+  printf '          - %s\n' "${candidates[@]}" >&2
+  echo "        Fixes:" >&2
+  echo "          • Ensure you installed a bcftools build that ships plugins (Conda/bioconda recommended)." >&2
+  echo "          • Verify the plugin file exists:  find \"\${CONDA_PREFIX:-/}\" -name gtc2vcf.so 2>/dev/null" >&2
+  echo "          • If you built gtc2vcf yourself, set:  export BCFTOOLS_PLUGINS=/path/to/plugins" >&2
+  return 1
 }
 
+# ---------- Directories ----------
 ensure_dirs() {
   mkdir -p "$GTC_DIR" "$VCF_DIR" "$CNV_DIR" "$QC_DIR" "$LOG_DIR" "$TMP_DIR"
+  # bcftools sort likes a temp dir; ensure one under VCF_DIR as well
+  mkdir -p "$VCF_DIR/tmp" "$QC_DIR/tmp" 2>/dev/null || true
 }
 
+# ---------- Input preflight ----------
 check_inputs_exist() {
   local ok=1
-  for f in "$BPM_MANIFEST" "$EGT_CLUSTER" "$REFERENCE_FASTA" "$SAMPLE_SHEET"; do
-    if [ ! -s "$f" ]; then echo "[ERR] Missing file: $f" >&2; ok=0; fi
+
+  # Required files
+  local required=("$BPM_MANIFEST" "$EGT_CLUSTER" "$REFERENCE_FASTA" "$SAMPLE_SHEET")
+  local f
+  for f in "${required[@]}"; do
+    if [ ! -s "$f" ]; then
+      echo "[ERR] Missing or empty file: $f" >&2
+      ok=0
+    fi
   done
+
+  # Optional but recommended: CSV_MANIFEST
+  if [ -n "${CSV_MANIFEST:-}" ] && [ ! -s "$CSV_MANIFEST" ]; then
+    echo "[WARN] CSV_MANIFEST is set but not found or empty: $CSV_MANIFEST (continuing without it)" >&2
+  fi
+
   if [ $ok -eq 0 ]; then
-    echo "[HINT] Place manifests under input_data/manifest/, cluster under input_data/cluster/, reference FASTA under reference/$REF_BUILD/" >&2
+    echo "[HINT] Expected layout:" >&2
+    echo "       • Manifests (BPM/CSV):    input_data/manifest/" >&2
+    echo "       • Cluster (EGT):          input_data/cluster/" >&2
+    echo "       • Reference FASTA:        reference/$REF_BUILD/" >&2
+    echo "       • Sample sheet (CSV):     input_data/sample_sheet/" >&2
     return 1
   fi
   return 0
 }
+
+############################################
+# Tell the pipeline exactly where dragena.exe lives (Windows install)
+# DRAGENA_BIN_OVERRIDE="/mnt/c/Program Files/Illumina/DRAGENArrayLocal/dragena-win-x64-DAv1.3.0-rc3-sha.f3fec02ebf2c43d3f3d6327cbe3b410edbc167b4/dragena/dragena.exe"
+############################################
 
 # This file should be sourced by numbered scripts; do not 'set -e' here.

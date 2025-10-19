@@ -41,6 +41,14 @@ illumina-genotyping-pipeline/
 └── docs/
 ├── SETUP.md                      # Full environment setup guide
 └── requirements.md
+---
+## Requirements (tools)
+
+- **Conda/Mamba** (tested with mamba/conda 24.x)
+- **bcftools = 1.22**, **bcftools-gtc2vcf-plugin = 1.22**, **htslib = 1.22.1**
+- **samtools** (for FASTA indexing)
+- **plink2** (for downstream QC)
+- **Optional:** Illumina DRAGEN Array CLI (`dragena`) — or `dragena.exe` via WSL
 
 ---
 ## Quick start
