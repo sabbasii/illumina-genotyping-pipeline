@@ -79,7 +79,8 @@ nano scripts/00_config.sh   # edit paths, RUN label, reference build
 •   **EGT cluster file:** cluster definitions for genotyping.
 •   **Reference FASTA:** genome build (GRCh37 or GRCh38).
 •   **Sample sheet:** defines sample metadata.
-## Outputs
+## Outputs 
+See [Output Files](docs/OUTPUTS.md) for details about generated files.
 •   **GTC files →** genotype calls from DRAGEN.
 •   **VCF/BCF →** normalized variant calls.
 •   **CNV calls** (if enabled).
