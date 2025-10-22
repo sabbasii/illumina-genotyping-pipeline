@@ -137,23 +137,28 @@ if command -v plink2 >/dev/null 2>&1; then
   # chrX: IMPORTANT — do NOT pass --chr-set/--allow-extra-chr with --split-par
   if [[ -s "$PSAM_SEX" ]]; then
     echo "[QC] chrX: using PSAM $PSAM_SEX and splitting PAR ($SPLIT_PAR)"
+
+    # permanent chrX prefix (so it survives tmp cleanup)
+    chrxp="$PLINK_DIR/chrX"
+    mkdir -p "$PLINK_DIR"
+
     plink2 --vcf "$FIXED_VCF" \
       --psam "$PSAM_SEX" \
       --split-par "$SPLIT_PAR" \
       --double-id \
       --threads "${THREADS:-16}" \
       --chr X \
-      --make-pgen --out "$tmp/chrX" || true
+      --make-pgen --out "$chrxp" || true
 
-    plink2 --pfile "$tmp/chrX" \
+    plink2 --pfile "$chrxp" \
       --threads "${THREADS:-16}" \
       --freq --missing --hardy --out "$OUT_DIR/qc/plink/cohort.chrX" || true
 
     # chrX HWE lands in .hardy.x
     gzip -f "$OUT_DIR/qc/plink/cohort.chrX."{afreq,smiss,vmiss,hardy.x} 2>/dev/null || true
 
-    # tuned sex-check (optional)
-    plink2 --pfile "$tmp/chrX" \
+    # tuned sex check (kept optional)
+    plink2 --pfile "$chrxp" \
       --threads "${THREADS:-16}" \
       --check-sex 'min-male-xf=0.8' 'max-female-yrate=0.02' \
       --out "$OUT_DIR/qc/plink/cohort.sexcheck" || true
@@ -161,6 +166,7 @@ if command -v plink2 >/dev/null 2>&1; then
     echo "[QC-INFO] No PSAM at $PSAM_SEX; skipping chrX and sex-check."
   fi
 
+  # safe to remove autosome tmp; chrX lives under $PLINK_DIR/chrX now
   rm -rf "$tmp"
 else
   echo "[QC-INFO] plink2 not found; skipping PLINK QC."
