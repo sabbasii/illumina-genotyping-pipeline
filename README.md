@@ -42,7 +42,9 @@ illumina-genotyping-pipeline/
 └── docs/
 ├── SETUP.md                      # Full environment setup guide
 └── requirements.md
+
 ---
+
 ## Requirements (tools)
 
 - **Conda/Mamba** (tested with mamba/conda 24.x)
