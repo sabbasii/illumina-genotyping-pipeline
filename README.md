@@ -15,6 +15,7 @@ This repository provides reproducible scripts and configuration templates for pr
 - **Environment isolation:** Conda/mamba-based reproducible environment with bcftools plugins.
 - **Scalable:** multi-threading supported in DRAGEN and bcftools steps.
 ---
+```text
 ## Directory structure
 illumina-genotyping-pipeline/
 ├── input_data/
