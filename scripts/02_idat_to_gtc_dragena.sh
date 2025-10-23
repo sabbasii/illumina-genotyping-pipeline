@@ -11,36 +11,46 @@ source "$REPO_ROOT/scripts/00_config.sh"
 ensure_dirs
 
 LOG="$LOG_DIR/02_idat_to_gtc_dragena.log"
-echo "== DRAGEN IDAT->GTC ==" | tee "$LOG"
-echo "RUN=$RUN  REF_BUILD=$REF_BUILD" | tee -a "$LOG"
+{
+  echo "== DRAGEN IDAT->GTC =="
+  echo "RUN=$RUN  REF_BUILD=$REF_BUILD"
+} | tee "$LOG"
 
 # Decide how to call DRAGEN:
 # 1) native Linux 'dragena' if present
 # 2) Windows 'dragena.exe' via WSL if present
-
-# Allow override from config (if set)
-if [[ -n "${DRAGENA_BIN_OVERRIDE:-}" && -x "$DRAGENA_BIN_OVERRIDE" ]]; then
-  DRAGENA_BIN="$DRAGENA_BIN_OVERRIDE"
-  MODE="windows"
-fi
+# 3) allow explicit override
 
 DRAGENA_BIN=""
-if command -v dragena >/dev/null 2>&1; then
-  DRAGENA_BIN="dragena"
-  MODE="linux"
-else
-  # Common Windows install paths
-  for p in \
-    "/mnt/c/Program Files/Illumina/DRAGEN Array/dragena.exe" \
-    "/mnt/c/Program Files (x86)/Illumina/DRAGEN Array/dragena.exe"
-  do
-    if [[ -x "$p" ]]; then DRAGENA_BIN="$p"; MODE="windows"; break; fi
-  done
+MODE=""
+
+# (A) Respect explicit override first
+if [[ -n "${DRAGENA_BIN_OVERRIDE:-}" && -x "${DRAGENA_BIN_OVERRIDE}" ]]; then
+  DRAGENA_BIN="$DRAGENA_BIN_OVERRIDE"
+  # Guess mode from filename
+  if [[ "$DRAGENA_BIN" == *.exe ]]; then MODE="windows"; else MODE="linux"; fi
+fi
+
+# (B) Auto-detect if not set by override
+if [[ -z "$DRAGENA_BIN" ]]; then
+  if command -v dragena >/dev/null 2>&1; then
+    DRAGENA_BIN="dragena"
+    MODE="linux"
+  else
+    for p in \
+      "/mnt/c/Program Files/Illumina/DRAGEN Array/dragena.exe" \
+      "/mnt/c/Program Files (x86)/Illumina/DRAGEN Array/dragena.exe"
+    do
+      if [[ -x "$p" ]]; then DRAGENA_BIN="$p"; MODE="windows"; break; fi
+    done
+  fi
 fi
 
 if [[ -z "$DRAGENA_BIN" ]]; then
-  echo "[ERROR] Could not find 'dragena' on PATH or 'dragena.exe' in Program Files." | tee -a "$LOG"
-  echo "        Install Illumina DRAGEN Array, or ensure its bin dir is on PATH." | tee -a "$LOG"
+  {
+    echo "[ERROR] Could not find 'dragena' on PATH or 'dragena.exe' in Program Files."
+    echo "        Install Illumina DRAGEN Array, or set DRAGENA_BIN_OVERRIDE to the binary."
+  } | tee -a "$LOG"
   exit 1
 fi
 
@@ -53,7 +63,11 @@ mv "$tmp_ss" "$SAMPLE_SHEET"
 
 # Build command arguments; convert to Windows paths if invoking dragena.exe
 if [[ "$MODE" == "windows" ]]; then
-  # Convert to Windows-style paths for the Windows EXE
+  if ! command -v wslpath >/dev/null 2>&1; then
+    echo "[ERROR] 'wslpath' not found but Windows DRAGEN binary detected. Install WSL utilities." | tee -a "$LOG"
+    exit 1
+  fi
+
   IDAT_WIN=$(wslpath -w "$IDAT_DIR")
   BPM_WIN=$(wslpath -w "$BPM_MANIFEST")
   EGT_WIN=$(wslpath -w "$EGT_CLUSTER")

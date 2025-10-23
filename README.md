@@ -22,30 +22,64 @@ This repository provides reproducible scripts and configuration templates for pr
 
 ```text
 illumina-genotyping-pipeline/
-├── input_data/
-│   ├── idat/                  # Raw IDAT files
-│   ├── manifest/              # BPM + CSV manifest files
-│   ├── sample_sheet/          # Illumina sample sheet(s)
-│   └── cluster/               # EGT cluster files
-├── reference/
-│   ├── GRCh37/                # Reference FASTA
-│   └── GRCh38/                # Alternative reference build
-├── output/
-│   └── genotype_run1/         # Example run outputs
-│       ├── gtc/               # GTC output files
-│       ├── vcf/               # DRAGEN VCFs
-│       ├── cnv/               # Copy number variation calls
-│       ├── qc/                # QC reports
-│       ├── logs/              # Run logs
-│       └── tmp/               # Temporary files
-├── scripts/
-│   ├── 00_config.sh           # Central config template
-│   ├── 02_idat_to_gtc_dragena.sh
-│   ├── 03_gtc_to_vcf_bcftools.sh
-│   └── env_check.sh           # Checks environment & plugins
-└── docs/
-    ├── SETUP.md               # Full environment setup guide
-    └── requirements.md
+├─ docs/                      
+│  ├─ SETUP.md
+│  ├─ sexcheck.md
+│  ├─ qc_filters.md
+│  └─ CHANGELOG.md
+├─ env/                       # environment & reproducibility
+│  ├─ environment.yml
+│  └─ environment.lock.yml
+├─ reference/                 # genomes/manifests that are versioned/immutable
+│  ├─ GRCh37/...
+│  └─ manifests/...
+├─ input_data/                # raw inputs (not tracked or via .gitignore)
+│  ├─ idat/
+│  ├─ manifest/
+│  ├─ cluster/
+│  └─ sample_sheet/
+├─ metadata/                  # small, text metadata that *is* tracked
+│  ├─ cohort.sex.psam
+│  ├─ sexmap.txt
+│  ├─ overrides/             # manual curation lives here
+│  │  └─ sex_overrides.txt
+│  └─ runs/                  # run manifests for provenance
+│     └─ genotype_run1.yaml  # parameters used for the run
+├─ scripts/                   # numbered, composable CLI steps
+│  ├─ 00_config.sh
+│  ├─ 01_verify_inputs.sh
+│  ├─ 02_idat_to_gtc_dragena.sh
+│  ├─ 03_gtc_to_vcf_bcftools.sh
+│  ├─ 10_qc_vcf.sh
+│  ├─ 11_build_psam_from_barcode.sh
+│  ├─ 12_export_sexcheck_reports.sh
+│  ├─ 20_qc_filters.sh        # (new)
+│  ├─ plot_pca.py             # (optional helper)
+│  └─ utils/                  # tiny helpers if needed
+├─ output/                    # per-run sandboxes (not tracked)
+│  └─ genotype_run1/
+│     ├─ logs/                # all logs, by stage, timestamped
+│     ├─ tmp/                 # scratch, safe to nuke
+│     ├─ gtc/
+│     ├─ vcf/
+│     ├─ qc/
+│     │  ├─ summaries/        # txt/tsv.gz snapshots (af, hardy, missing)
+│     │  ├─ sexcheck/         # sexcheck specific outputs
+│     │  │  ├─ chrX.{pgen,pvar,psam}
+│     │  │  ├─ cohort.sexcheck.sexcheck
+│     │  │  └─ reports/       # tidy: slim.tsv, problems.tsv, histograms
+│     │  ├─ plink/            # working pfiles (autosomes.*; analysis.*)
+│     │  │  ├─ plink_tmp/     # throwaway intermediates from 10_qc_vcf.sh
+│     │  │  ├─ autosomes.{pgen,pvar,psam}
+│     │  │  ├─ analysis.clean.{pgen,pvar,psam}
+│     │  │  ├─ analysis.clean.prune.in/out
+│     │  │  ├─ analysis.clean.pca.{eigenvec,eigenval}
+│     │  │  ├─ analysis.clean.unrel.{pgen,pvar,psam}
+│     │  │  └─ analysis.clean.unrel.pca.{eigenvec,eigenval}
+│     │  └─ reports/          # human-readable summaries + PNGs (PCA plots)
+│     └─ cnv/                 # (if used)
+├─ tests/                     # tiny fixtures + CI sanity checks (optional)
+└─ README.md
 ```
 ---
 
