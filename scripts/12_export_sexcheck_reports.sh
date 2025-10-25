@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Export tidy sex-check reports: problems, borderlines, histograms.
-# Writes to: $OUT_DIR/qc/sexcheck_reports/
+
 set -euo pipefail
+export LC_ALL=C
 
 # --- Resolve repo root and load config
 _SCRIPT="${BASH_SOURCE[0]:-$0}"
@@ -9,11 +10,12 @@ REPO_ROOT="$(cd -- "$(dirname -- "$_SCRIPT")/.." && pwd -P)"
 # shellcheck source=/dev/null
 source "$REPO_ROOT/scripts/00_config.sh"
 
-# --- Inputs/Outputs
-FILE="${SEXCHECK_FILE:-$PLINK_DIR/cohort.sexcheck.sexcheck}"   # PLINK --check-sex output
-PSAM="$PSAM_SEX"                                               # recorded sex from SampleSheet
-OUT="$QC_DIR/sexcheck_reports"
-TMP="$QC_DIR/tmp"
+# --- Inputs/Outputs (align with new layout)
+FILE="${SEXCHECK_FILE:-$QC_SEXCHECK_DIR/cohort.sexcheck.sexcheck}"   # PLINK --check-sex output
+PSAM="$PSAM_SEX"                                                     # recorded sex from SampleSheet
+OUT="$QC_SEXCHECK_REPORTS_DIR"
+TMP="$QC_SEXCHECK_DIR/tmp"
+ensure_dirs
 mkdir -p "$OUT" "$TMP"
 
 # --- Guardrails
@@ -53,14 +55,18 @@ awk -F'\t' 'NR>1{
 }' "$OUT/sexcheck.slim.tsv" > "$OUT/sexcheck.borderline.tsv"
 
 # --- 5) Attach recorded sex to PROBLEM rows (left join by IID)
+# Build a simple IID->SEX map from PSAM (skip header), sort
 awk -F'\t' 'NR>1{print $2"\t"$5}' "$PSAM" | sort -t$'\t' -k1,1 > "$TMP/psam.sex"
-sort -t$'\t' -k1,1 "$OUT/sexcheck.problems.tsv" > "$TMP/problems.sorted.tsv" || true
-join -t $'\t' -1 1 -2 1 "$TMP/problems.sorted.tsv" "$TMP/psam.sex" \
-  > "$OUT/sexcheck.problems_with_recorded.tsv" || true
-# Add header if file not empty
-if [[ -s "$OUT/sexcheck.problems_with_recorded.tsv" ]]; then
-  (echo -e "#IID\tSTATUS\tPEDSEX\tSNPSEX\tXF\tYRATE\tRECORDED_SEX"; cat "$OUT/sexcheck.problems_with_recorded.tsv") \
-    > "$OUT/.tmp" && mv "$OUT/.tmp" "$OUT/sexcheck.problems_with_recorded.tsv"
+# Sort only data rows (skip header) from problems
+{ read -r header < "$OUT/sexcheck.problems.tsv" || true; printf "%s\n" "$header" > "$TMP/problems.header"; }
+tail -n +2 "$OUT/sexcheck.problems.tsv" | sort -t$'\t' -k1,1 > "$TMP/problems.sorted.tsv" || true
+# Join data rows, then prepend header with new column name
+join -t $'\t' -1 1 -2 1 "$TMP/problems.sorted.tsv" "$TMP/psam.sex" > "$TMP/problems.joined" || true
+if [[ -s "$TMP/problems.joined" ]]; then
+  { printf "#IID\tSTATUS\tPEDSEX\tSNPSEX\tXF\tYRATE\tRECORDED_SEX\n"; cat "$TMP/problems.joined"; } \
+    > "$OUT/sexcheck.problems_with_recorded.tsv"
+else
+  : > "$OUT/sexcheck.problems_with_recorded.tsv"
 fi
 
 # --- 6) Histograms (numeric + ASCII bars)
