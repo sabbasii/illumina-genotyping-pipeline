@@ -2,7 +2,7 @@
 # Export tidy sex-check reports: problems, borderlines, histograms.
 
 set -euo pipefail
-export LC_ALL=C
+#export LC_ALL=C
 
 # --- Resolve repo root and load config
 _SCRIPT="${BASH_SOURCE[0]:-$0}"

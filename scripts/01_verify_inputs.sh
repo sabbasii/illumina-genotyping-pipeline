@@ -19,41 +19,47 @@ missing_tools=()
 command -v bcftools >/dev/null 2>&1 || missing_tools+=("bcftools")
 command -v plink2   >/dev/null 2>&1 || missing_tools+=("plink2")
 command -v samtools >/dev/null 2>&1 || missing_tools+=("samtools")
+# Optional for expression prep
+command -v python3  >/dev/null 2>&1 || missing_tools+=("python3 (optional for expr prep)")
 
 if ((${#missing_tools[@]})); then
   echo "[WARN] Missing tools: ${missing_tools[*]}"
   echo "       (Tip) conda activate array-pipeline"
 else
-  echo "[OK] Tools present: bcftools, plink2, samtools"
+  echo "[OK] Tools present: bcftools, plink2, samtools, python3"
 fi
 echo
 
-# Helper: print OK/MISSING
+# Helper: print OK/MISSING/SKIP
 report() {
   local label="$1" path="$2"
   local status="MISSING"
   [[ -s "$path" ]] && status="OK"
-  printf "%-18s : %-7s  %s\n" "$label" "$status" "$path"
+  printf "%-22s : %-7s  %s\n" "$label" "$status" "$path"
+}
+report_skip() {
+  local label="$1" note="$2"
+  printf "%-22s : %-7s  %s\n" "$label" "SKIP" "$note"
 }
 
-echo "== Required inputs =="
+echo "== Required inputs (genotyping) =="
 report "BPM_MANIFEST"     "$BPM_MANIFEST"
 if [[ -n "${CSV_MANIFEST:-}" ]]; then
   report "CSV_MANIFEST"   "$CSV_MANIFEST"
 else
-  printf "%-18s : %-7s  %s\n" "CSV_MANIFEST" "SKIP" "(not set)"
+  report_skip "CSV_MANIFEST" "(not set)"
 fi
 report "EGT_CLUSTER"      "$EGT_CLUSTER"
 report "REFERENCE_FASTA"  "$REFERENCE_FASTA"
 report "SAMPLE_SHEET"     "$SAMPLE_SHEET"
 echo
 
-# Warn (don???t exit) on missing required inputs
+# Warn (don't exit) on missing required inputs
 missing=0
 for f in "$BPM_MANIFEST" "$EGT_CLUSTER" "$REFERENCE_FASTA" "$SAMPLE_SHEET"; do
   [[ -s "$f" ]] || { echo "[WARN] Missing: $f"; missing=1; }
 done
-((missing==0)) && echo "[OK] All required inputs present." || echo "[WARN] Some required inputs are missing (see above)."
+((missing==0)) && echo "[OK] All required genotyping inputs present." || echo "[WARN] Some required genotyping inputs are missing (see above)."
 echo
 
 # FASTA index (only if samtools is available)
@@ -82,12 +88,26 @@ if [[ "$idat_n" -eq 0 ]]; then
   echo "[WARN] No IDAT files found. Place .idat files under: $IDAT_DIR"
 else
   echo "[INFO] First few IDATs:"
-  # Avoid SIGPIPE with head: collect then slice
   mapfile -t _first_idats < <(find "$IDAT_DIR" -type f \( -iname '*.idat' \) 2>/dev/null)
   for ((i=0; i<${#_first_idats[@]} && i<6; i++)); do
     printf '%s\n' "${_first_idats[$i]}"
   done
 fi
+echo
+
+# ===== OPTIONAL: Expression / Microarray inputs =====
+echo "== Optional inputs (expression/microarray) =="
+report "EXP_TGA_CSV"      "$EXP_TGA_CSV"
+report "EXP_TRANSPOSE"    "$EXP_TRANSPOSE"
+if [[ -s "$EXP_TGA_CSV" && -s "$EXP_TRANSPOSE" ]]; then
+  # Light-touch info (size + first header line)
+  sz_csv=$(du -h "$EXP_TGA_CSV" | awk '{print $1}')
+  sz_trn=$(du -h "$EXP_TRANSPOSE" | awk '{print $1}')
+  echo "[INFO] Sizes: TGA-BackUp.csv=$sz_csv  transpose_numbers.csv=$sz_trn"
+else
+  echo "[INFO] Expression inputs are optional; skipping if absent."
+fi
+echo
 
 # Ensure all output dirs exist per new layout
 ensure_dirs
@@ -95,8 +115,13 @@ echo "[OK] Output dirs ensured:"
 printf "  %s\n" \
   "$GTC_DIR" "$VCF_DIR" "$QC_DIR" "$LOG_DIR" \
   "$PLINK_DIR" "$TMP_DIR" \
-  "$QC_SUMMARIES_DIR" "$QC_SEXCHECK_DIR" "$QC_SEXCHECK_REPORTS_DIR" "$QC_REPORTS_DIR"
+  "$QC_SUMMARIES_DIR" "$QC_SEXCHECK_DIR" "$QC_SEXCHECK_REPORTS_DIR" "$QC_REPORTS_DIR" \
+  "$EXPR_OUT_DIR" "$EXPR_LISTS_DIR" "$PHENO_DIR"
 echo
 
 echo "[INFO] Run manifest target: $RUN_MANIFEST"
 echo "== Done =="
+
+# Usage:
+#   source scripts/00_config.sh
+#   bash   scripts/01_verify_inputs.sh
