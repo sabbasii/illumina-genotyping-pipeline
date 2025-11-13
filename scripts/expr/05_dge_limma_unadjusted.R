@@ -12,8 +12,8 @@ stopifnot(nzchar(EXPR_OUT_DIR), nzchar(OUT_DIR))
 
 expr_csv <- file.path(EXPR_OUT_DIR, "expr_selected_clean.nomrs.csv")
 meta_csv <- file.path(EXPR_OUT_DIR, "meta_selected.csv")
-OUTDIR   <- file.path(OUT_DIR, "expr", "dge_unadjusted")
-dir.create(OUTDIR, showWarnings = FALSE, recursive = TRUE)
+OUTDIR   <- file.path(OUT_DIR, "expr", "dge_unadjusted") # this builds a path string
+dir.create(OUTDIR, showWarnings = FALSE, recursive = TRUE) # dir.create(path, ) creates the directory
 
 cat("[I] expr:", expr_csv, "\n[I] meta:", meta_csv, "\n[I] out :", OUTDIR, "\n\n")
 stopifnot(file.exists(expr_csv), file.exists(meta_csv))
@@ -43,7 +43,7 @@ meta$UASG <- pick_first(meta, "UASG", "^UASG(\\.|\\.{3}\\d+)")
 if (!"StrokeStatus" %in% names(meta)) {
   FD <- pick_first(meta, "Final Diagnosis", "^Final Diagnosis(\\.|\\.{3}\\d+)")
   meta$StrokeStatus <- ifelse(!is.na(FD) & tolower(trimws(FD))=="control", "Control", "Non-control")
-}
+} # this creates a new column named StrokeStatus
 meta <- meta %>% filter(!is.na(StrokeStatus), !is.na(UASG))
 
 # Set Group with clean, syntactic level names
