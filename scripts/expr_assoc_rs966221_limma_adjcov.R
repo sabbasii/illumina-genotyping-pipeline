@@ -29,7 +29,7 @@ message("[load] ", expr_csv)
 expr_df <- readr::read_csv(expr_csv, show_col_types = FALSE)
 stopifnot(ncol(expr_df) >= 9)
 
-colnames(expr_df)[1] <- "ProbeID"
+colnames(expr_df)[1] <- "ProbeID"  # this is changing the first col name into ProbeID
 sample_cols <- colnames(expr_df)[8:ncol(expr_df)]
 stopifnot(length(sample_cols) > 0)
 
