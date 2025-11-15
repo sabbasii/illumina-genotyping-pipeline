@@ -442,7 +442,6 @@ You can now use the annotated VCF and the exported tables for downstream analyse
 
 If you prefer not to run each preparation step manually, this repository includes a helper script that performs all steps automatically:
 
-```bash
 bash scripts/glist_hg19_gene_annotation_prepare.sh
 
 This script performs exactly the same operations described in this document, but in a fully automated way:
@@ -471,4 +470,3 @@ After running this script, you will have the following ready-to-use files:
 - `reference/gene_ranges_hg19/glist-hg19.gz`
 - `reference/gene_ranges_hg19/glist-hg19.gz.tbi`
 - `reference/gene_ranges_hg19/gene_header.txt`
-```
