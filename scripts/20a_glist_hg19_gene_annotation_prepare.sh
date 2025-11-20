@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# gene_annotation_prep.sh
+# prepare_glist_hg19.sh
 # Download PLINK glist-hg19, clean it, bgzip + tabix index, and create gene_header.txt
 # Usage (from anywhere):
 #   bash scripts/gene_annotation_prep.sh
