@@ -99,7 +99,7 @@ illumina-genotyping-pipeline/
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/<your-username>/illumina-genotyping-pipeline.git
+git clone https://github.com/sabbasi/illumina-genotyping-pipeline.git
 cd illumina-genotyping-pipeline
 ```
 
