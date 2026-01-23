@@ -11,7 +11,7 @@ This repository provides reproducible scripts and configuration templates for pr
 ## Features
 
 - **Cross-platform:** works on WSL2 (Ubuntu), Linux, and macOS (zsh/bash).
-- **Reproducible:** config-driven (`scripts/00_config.sh`).
+- __Reproducible:__ config-driven (`scripts/00_config.sh`).
 - **Automated pipeline:** supports IDAT → GTC conversion, GTC → VCF, normalization, QC, and downstream analysis.
 - **Environment isolation:** Conda/mamba-based reproducible environment with bcftools plugins.
 - **Scalable:** multi-threading supported in DRAGEN and bcftools steps.
@@ -81,6 +81,7 @@ illumina-genotyping-pipeline/
 ├─ tests/                     # tiny fixtures + CI sanity checks (optional)
 └─ README.md
 ```
+
 ---
 
 ## Requirements (tools)
@@ -97,32 +98,32 @@ illumina-genotyping-pipeline/
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/<your-username>/illumina-genotyping-pipeline.git
-   cd illumina-genotyping-pipeline
-   ```
+```bash
+git clone https://github.com/<your-username>/illumina-genotyping-pipeline.git
+cd illumina-genotyping-pipeline
+```
 
 2. Set up the environment (see docs/SETUP.md):
 
-   ```bash
-   mamba env create -f environment.yml
-   conda activate array-pipeline
-   ./scripts/env_check.sh
-   ```
+```bash
+conda env create -f environment.yml
+conda activate array-pipeline
+./scripts/env_check.sh
+```
 
 3. Configure your run:
 
-   ```bash
-   cp scripts/00_config.example.sh scripts/00_config.sh
-   nano scripts/00_config.sh   # edit paths, RUN label, reference build
-   ```
+```bash
+cp scripts/00_config.example.sh scripts/00_config.sh
+nano scripts/00_config.sh   # edit paths, RUN label, reference build
+```
 
 4. Run the pipeline:
 
-   ```bash
-   ./scripts/02_idat_to_gtc_dragena.sh
-   ./scripts/03_gtc_to_vcf_bcftools.sh
-   ```
+```bash
+./scripts/02_idat_to_gtc_dragena.sh
+./scripts/03_gtc_to_vcf_bcftools.sh
+```
 
 ---
 
@@ -133,6 +134,43 @@ illumina-genotyping-pipeline/
 - **EGT cluster file:** cluster definitions for genotyping.
 - **Reference FASTA:** genome build (GRCh37 or GRCh38).
 - **Sample sheet:** defines sample metadata.
+
+## Reference Genome (Required)
+
+This pipeline requires a **human reference genome** that matches the **genome build used by your Illumina genotyping array and downstream tools** (DRAGEN / gtc→VCF / PLINK).
+
+<strong> Important</strong><br>
+A mismatched reference genome (wrong build or chromosome naming) will cause:
+<ul>
+  <li>REF/ALT allele mismatches</li>
+  <li>Missing contigs</li>
+  <li>gtc→VCF or DRAGEN failures</li>
+</ul>
+
+### Quick start (GRCh37 / g1k_v37)
+
+For most **Illumina GSAMD-24v3** genotyping arrays, the manifest specifies:
+- **Genome build:** GRCh37 / g1k_v37
+
+Download the recommended reference:
+
+```bash
+ref_url=https://webdata.illumina.com/downloads/productfiles/microarray-analytics-array/GRCh37_genome.zip
+wget $ref_url
+unzip GRCh37_genome.zip
+```
+
+👉 Before proceeding, verify integrity and indexing (see detailed steps below).
+
+Detailed reference documentation
+
+For:
+- Genome build background (hg19 vs GRCh37 vs GRCh38)
+- 1000 Genomes & Illumina conventions
+- Reference integrity checks
+- Chromosome naming pitfalls
+
+➡️ See reference/README.md.
 
 ## Outputs
 
@@ -149,8 +187,8 @@ See [Output Files](docs/OUTPUTS.md) for details about generated files.
 ## Troubleshooting
 
 - **Performance in WSL:** always work inside `/home/<user>`; avoid `/mnt/c/...`.
-- **Plugin errors:** check that `BCFTOOLS_PLUGINS` is set by `activate_env` in `00_config.sh`.
-- **Input validation:** use `check_inputs_exist` from `00_config.sh` to confirm BPM, EGT, FASTA, and sample sheet exist.
+- __Plugin errors:__ check that `BCFTOOLS_PLUGINS` is set by `activate_env` in `00_config.sh`.
+- __Input validation:__ use `check_inputs_exist` from `00_config.sh` to confirm BPM, EGT, FASTA, and sample sheet exist.
 - **Common error logs:** stored under `output/<run>/logs/`.
 
 ---
