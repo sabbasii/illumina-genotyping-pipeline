@@ -12,7 +12,8 @@ input_data/
 *.egt
 
 # ---- Reference genomes & indexes ----
-reference/
+reference/*
+!reference/
 !reference/README.md
 *.fa*
 *.fasta*
