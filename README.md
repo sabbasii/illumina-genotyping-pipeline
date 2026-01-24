@@ -170,7 +170,7 @@ For:
 - Reference integrity checks
 - Chromosome naming pitfalls
 
-➡️ See reference/README.md.
+➡️ See the [Reference README](reference/README.md).
 
 ## Outputs
 
