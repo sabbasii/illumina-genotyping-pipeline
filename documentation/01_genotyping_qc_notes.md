@@ -6,22 +6,34 @@
 
 ## Table of Contents
 
-1. Genotype Clusters (AA, AB, BB)
-2. Cluster Quality Scores  
-   2.1 GenTrain_Score  
-   2.2 Orig_Score  
-   2.3 Cluster_Sep  
-   2.4 Edited Flag
-3. Training Set Genotype Counts (N_AA, N_AB, N_BB)
-4. Cluster Signal Metrics  
-   4.1 R (Total Intensity)  
-   4.2 THETA (Allele Balance)
-5. Cluster Statistics per Genotype  
-   5.1 meanR and devR  
-   5.2 meanTHETA and devTHETA
-6. Genotype Calling Geometry (R vs THETA)
-7. Log R Ratio (LRR)
-8. Allele Frequency (AF)
+1. Introduction  
+2. Genotype Clusters (AA, AB, BB)  
+3. Cluster Quality Scores  
+   3.1 GenTrain_Score  
+   3.2 Orig_Score  
+   3.3 Cluster_Sep  
+   3.4 Edited Flag  
+4. Training Set Genotype Counts (N_AA, N_AB, N_BB)  
+5. Cluster Signal Metrics  
+   5.1 R (Total Intensity)  
+   5.2 THETA (Allele Balance)  
+6. Cluster Statistics per Genotype  
+   6.1 meanR and devR  
+   6.2 meanTHETA and devTHETA  
+7. Genotype Calling Geometry (R vs THETA)  
+8. Log R Ratio (LRR)  
+9. Allele Frequency (AF)  
+10. Call Rate and Missingness  
+11. Hardy–Weinberg Equilibrium (HWE)  
+12. Sample-Level QC  
+   12.1 Sample Call Rate  
+   12.2 LRR Standard Deviation  
+   12.3 Heterozygosity Rate  
+13. SNP-Level QC Thresholds  
+   13.1 Call Rate  
+   13.2 Minor Allele Frequency (MAF)  
+   13.3 Hardy–Weinberg Equilibrium  
+   13.4 Cluster-Based Filters  
 
 ---
 
