@@ -77,3 +77,6 @@ venv/
 # ---- Scripts ----
 scripts/00_config.sh
 *:Zone.Identifier
+
+# ---- documentation ----
+mdir/
