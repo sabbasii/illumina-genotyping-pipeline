@@ -1,0 +1,6 @@
+{
+  "FIRST_SAMPLE_COL_IDX": 7,
+  "CSV_PROBE_START_NAME": "TC0100006437.hg.1",
+  "KEEP_DIAG": ["Control", "Ischemic Stroke", "TIA"],
+  "SAMPLESHEET_SKIPROWS": 8
+}
