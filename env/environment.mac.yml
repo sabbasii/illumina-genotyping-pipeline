@@ -1,0 +1,13 @@
+name: array-pipeline
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bcftools=1.22
+  - htslib=1.22.1
+  - samtools
+  - plink2
+  - zlib
+  - xz
+  - pigz

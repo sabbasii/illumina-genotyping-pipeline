@@ -20,13 +20,62 @@ If not, install Miniconda from the official website.
 
 ## 2. Create the Environment
 
-The file `environment.yml` in this repository defines all the required tools and versions.
+## Platform-specific conda environments
 
-Run:
+This repository defines all required tools and versions using **two platform-specific conda environment files**:
+
+- `environment.mac.yml`
+- `environment.linux.yml`
+
+This split is intentional and necessary to ensure reliable setup across operating systems.
+
+
+
+### --- Why this matters ---
+The pipeline relies on `bcftools` for variant processing. One specific step — **Illumina GTC → VCF conversion** — uses the `bcftools +gtc2vcf` plugin.
+
+While `bcftools` itself runs on both macOS and Linux, the `gtc2vcf` plugin is distributed and supported only on **Linux** through Bioconda. While `bcftools` runs on macOS, the `gtc2vcf` plugin is not provided as a macOS package and is available only as source code ([gtc2vcf GitHub repository](https://github.com/freeseek/gtc2vcf)).
+
+
+
+
+### --- What `gtc2vcf` does ---
+`gtc2vcf` converts **Illumina genotyping array output** (`.gtc` files) into standard **VCF/BCF** format. This is the only Illumina-specific step in the pipeline.
+
+After this conversion, all downstream analyses operate on standard VCF/BCF files and use tools that are fully supported on both macOS and Linux.
+
+
+
+### --- Platform behavior ---
+
+**macOS**
+- Supports `bcftools`, `htslib`, `samtools`, and `plink2`
+- Suitable for all downstream VCF/BCF processing, QC, and analysis
+- Does not support `bcftools +gtc2vcf` via conda
+
+**Linux**
+- Supports the full toolchain, including `bcftools +gtc2vcf`
+- Required for Illumina GTC → VCF conversion
+
+**WSL (Windows Subsystem for Linux)**
+- Treated the same as native Linux
+- Fully supported for `bcftools +gtc2vcf`
+- Recommended for Windows users
+
+
+
+### --- Choosing the correct environment ---
+Select the environment file that matches your platform:
 
 ```bash
-conda env create -f environment.yml
+```bash
+conda env create -f environment.mac.yml
+conda env create -f environment.linux.yml
+
 ```
+
++ Both environments provide the same downstream analysis tools.
++ Only the Linux/WSL environment includes support for Illumina GTC → VCF conversion.
 
 ---
 
