@@ -247,7 +247,7 @@ conda env export --no-builds > environment.lock.yml
 ```bash
 git clone git@github.com:sabbasii/illumina-genotyping-pipeline.git
 cd illumina-genotyping-pipeline
-conda env create -f environment.yml
+conda env create -f environment.linux.yml
 conda activate array-pipeline
 ./scripts/01_verify_inputs.sh
 ```
