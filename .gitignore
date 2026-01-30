@@ -75,8 +75,10 @@ venv/
 .idea/
 
 # ---- Scripts ----
-scripts/00_config.sh
+#scripts/00_config.sh
 *:Zone.Identifier
 
 # ---- documentation ----
 mdir/
+
+check/
