@@ -37,7 +37,9 @@ illumina-genotyping-pipeline/
 │  ├─ idat/
 │  ├─ manifest/
 │  ├─ cluster/
+│  ├─ expression_microarray/
 │  └─ sample_sheet/
+│
 ├─ metadata/                  # small, text metadata that *is* tracked
 │  ├─ cohort.sex.psam
 │  ├─ sexmap.txt
@@ -141,6 +143,7 @@ This pipeline requires a **human reference genome** that matches the **genome bu
 
 <strong> Important</strong><br>
 A mismatched reference genome (wrong build or chromosome naming) will cause:
+
 <ul>
   <li>REF/ALT allele mismatches</li>
   <li>Missing contigs</li>
@@ -150,7 +153,8 @@ A mismatched reference genome (wrong build or chromosome naming) will cause:
 ### Quick start (GRCh37 / g1k_v37)
 
 For most **Illumina GSAMD-24v3** genotyping arrays, the manifest specifies:
-- **Genome build:** GRCh37 / g1k_v37
+
+- __Genome build:__ GRCh37 / g1k_v37
 
 Download the recommended reference:
 
@@ -165,6 +169,7 @@ unzip GRCh37_genome.zip
 Detailed reference documentation
 
 For:
+
 - Genome build background (hg19 vs GRCh37 vs GRCh38)
 - 1000 Genomes & Illumina conventions
 - Reference integrity checks
