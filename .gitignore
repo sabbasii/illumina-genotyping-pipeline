@@ -82,3 +82,5 @@ venv/
 mdir/
 R_test/
 check/
+old_metadata/
+metadata/
