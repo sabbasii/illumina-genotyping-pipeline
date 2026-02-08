@@ -41,11 +41,14 @@ scripts/
     │   └── eqtl_run.R
     │
     ├── 05_inspect_results/
+    │   ├── 01_qq_eqtl.R
+    │   ├── 02_manhattan_eqtl.R
+    │   ├── 03_eqtl_signal_summary.R
+    │   ├── 04_plot_top_eqtl_associations.R
+    │   ├── 05_target_gene_eqtl_summary.R
+    │   ├── 06_target_eqtl_network.R
+    │   └── 07_target_cis_profile.R
     │
-
-
-
-
     ├── utils/
     │   ├── genotype_helpers.py
     │   ├── matrix_helpers.py
