@@ -8,16 +8,20 @@ suppressPackageStartupMessages({
 # make_geneloc_from_gtf.R
 #
 # Build Matrix-eQTL geneloc.txt from an Ensembl GTF, filtered to
-# the gene IDs actually present in GE.txt (gene symbols).
+# the gene IDs present in GE.txt (gene symbols).
 #
 # Inputs:
-#   - output/genotype_run1/eqtl/GE.txt            (geneid column)
+#   - output/eqtl/GE.txt
 #   - reference/annotation/Homo_sapiens.GRCh37.87.gtf.gz
 #
-# Output:
-#   - output/genotype_run1/eqtl/geneloc.txt
-#     columns: geneid, chr, left, right
-#     chr format: chr1..chr22, chrX, chrY, chrMT
+# Outputs (under output/eqtl/):
+#   1) geneloc.txt
+#      columns: geneid, chr, left, right
+#      (kept stable for Matrix-eQTL usage)
+#
+#   2) geneloc_extended.tsv
+#      columns: geneid, ensembl_gene_id, chr, left, right, strand, tss, gene_biotype
+#      (richer annotation for inspection scripts; does not affect eqtl engine)
 #
 # Run:
 #   source scripts/00_config.sh
@@ -28,11 +32,12 @@ suppressPackageStartupMessages({
 REPO_ROOT <- Sys.getenv("REPO_ROOT")
 if (REPO_ROOT == "") stop("REPO_ROOT is not set. Did you source scripts/00_config.sh?")
 
-ge_path  <- file.path(REPO_ROOT, "output/genotype_run1/eqtl/GE.txt")
+ge_path  <- file.path(REPO_ROOT, "output/eqtl/GE.txt")
 gtf_path <- file.path(REPO_ROOT, "reference/annotation/Homo_sapiens.GRCh37.87.gtf.gz")
 
-out_dir  <- file.path(REPO_ROOT, "output/genotype_run1/eqtl")
-out_path <- file.path(out_dir, "geneloc.txt")
+out_dir        <- file.path(REPO_ROOT, "output/eqtl")
+out_path       <- file.path(out_dir, "geneloc.txt")
+out_path_ext   <- file.path(out_dir, "geneloc_extended.tsv")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
 if (!file.exists(ge_path)) stop("Missing GE.txt: ", ge_path)
@@ -46,40 +51,62 @@ symbols <- unique(ge$geneid)
 symbols <- symbols[!is.na(symbols) & nzchar(symbols)]
 
 # ---- import GTF (genes only) ----
-gtf <- import(gtf_path)                 # rtracklayer reads .gtf.gz
+gtf <- import(gtf_path)  # reads .gtf.gz
 gtf_genes <- gtf[gtf$type == "gene"]
 
-gene_name <- mcols(gtf_genes)$gene_name
-chr_raw   <- as.character(seqnames(gtf_genes))
-left      <- start(gtf_genes)
-right     <- end(gtf_genes)
+# Pull metadata
+gene_name <- as.character(mcols(gtf_genes)$gene_name)
+ensg      <- as.character(mcols(gtf_genes)$gene_id)
+biotype   <- as.character(mcols(gtf_genes)$gene_biotype)
+if (all(is.na(biotype))) biotype <- as.character(mcols(gtf_genes)$gene_type)  # some GTFs use gene_type
 
-# Keep standard chromosomes; add "chr" prefix to match snpsloc (chr1, chrX, chrMT)
+chr_raw <- as.character(seqnames(gtf_genes))
+left    <- start(gtf_genes)
+right   <- end(gtf_genes)
+strandv <- as.character(strand(gtf_genes))  # "+" / "-" / "*"
+
+# Keep standard chromosomes; add "chr" prefix (chr1..chr22, chrX, chrY, chrMT)
 keep_chr <- chr_raw %in% c(as.character(1:22), "X", "Y", "MT")
 
-df <- data.frame(
+dt <- data.table(
   geneid = gene_name,
-  chr    = paste0("chr", chr_raw),
-  left   = left,
-  right  = right,
-  stringsAsFactors = FALSE
+  ensembl_gene_id = ensg,
+  chr_raw = chr_raw,
+  chr = paste0("chr", chr_raw),
+  left = as.integer(left),
+  right = as.integer(right),
+  strand = strandv,
+  gene_biotype = biotype
 )
 
-df <- df[keep_chr & !is.na(df$geneid) & nzchar(df$geneid), , drop = FALSE]
+dt <- dt[keep_chr]
+dt <- dt[!is.na(geneid) & nzchar(geneid)]
 
-# ---- filter to genes present in GE + de-duplicate (keep widest span per geneid) ----
-df <- df[df$geneid %in% symbols, , drop = FALSE]
-df$span <- df$right - df$left
+# ---- filter to genes present in GE ----
+dt <- dt[geneid %in% symbols]
 
-# If a gene appears multiple times, keep the entry with the largest span
-df <- df[order(df$geneid, -df$span), ]
-df <- df[!duplicated(df$geneid), c("geneid", "chr", "left", "right")]
+# ---- compute TSS (uses strand; falls back to left if strand missing) ----
+# '+' => TSS = left, '-' => TSS = right, otherwise left
+dt[, tss := left]
+dt[strand %in% c("-", "-1"), tss := right]
 
-# ---- write output ----
-fwrite(df, out_path, sep = "\t", quote = FALSE, na = "NA")
+# ---- de-duplicate (keep widest span per geneid) ----
+dt[, span := right - left]
+setorder(dt, geneid, -span)
+dt <- dt[!duplicated(geneid)]
 
-cat("Wrote:", out_path, "\n")
-cat("Mapped genes:", nrow(df), "of", length(symbols), "unique geneid in GE.txt\n")
+# ---- write minimal geneloc.txt (stable) ----
+dt_min <- dt[, .(geneid, chr, left, right)]
+fwrite(dt_min, out_path, sep = "\t", quote = FALSE, na = "NA")
+
+# ---- write extended file (for inspection) ----
+dt_ext <- dt[, .(geneid, ensembl_gene_id, chr, left, right, strand, tss, gene_biotype)]
+fwrite(dt_ext, out_path_ext, sep = "\t", quote = FALSE, na = "NA")
+
+cat("Wrote:\n")
+cat("  ", out_path, "\n", sep = "")
+cat("  ", out_path_ext, "\n", sep = "")
+cat("Mapped genes:", nrow(dt_min), "of", length(symbols), "unique geneid in GE.txt\n")
 
 # Run
 #   source scripts/00_config.sh
