@@ -7,13 +7,13 @@ Build Matrix eQTL-style Covariates.txt from clinical metadata for the FINAL over
 Inputs (defaults)
 -----------------
 Overlap list:
-  $REPO_ROOT/output/genotype_run1/eqtl/uasg_ge_snp_meta_overlap.txt
+  $REPO_ROOT/output/eqtl/uasg_ge_snp_meta_overlap.txt
 Metadata CSV:
   $REPO_ROOT/metadata/clinical_data.csv   (must contain 'sample_name')
 
 Output
 ------
-  $REPO_ROOT/output/genotype_run1/eqtl/Covariates.txt
+  $REPO_ROOT/output/eqtl/Covariates.txt
 
 Format (Matrix eQTL covariates)
 -------------------------------
@@ -62,7 +62,7 @@ def main() -> int:
     if not repo_root:
         die("REPO_ROOT not set. Run: source scripts/00_config.sh")
 
-    base_eqtl = Path(repo_root) / "output/genotype_run1/eqtl"
+    base_eqtl = Path(repo_root) / "output/eqtl"
 
     overlap_path = Path(args.overlap) if args.overlap else (base_eqtl / "uasg_ge_snp_meta_overlap.txt")
     meta_path = Path(args.meta) if args.meta else (Path(repo_root) / "metadata/clinical_data.csv")

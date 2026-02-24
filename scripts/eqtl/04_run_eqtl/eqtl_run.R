@@ -11,15 +11,15 @@ suppressPackageStartupMessages({
 #   2) CIS + TRANS eQTL (separate output files)
 #
 # Update: supports --base-dir so the same script can run on either:
-#   - output/genotype_run1/eqtl
-#   - output/genotype_run1/eqtl_allSNPs
+#   - output/eqtl
+#   - output/eqtl_allSNPs
 #
 # Run examples:
 #   source scripts/00_config.sh
 #   Rscript scripts/eqtl/04_run_eqtl/eqtl_run.R
 #
 #   # Run on all-SNP inputs
-#   Rscript scripts/eqtl/04_run_eqtl/eqtl_run.R --base-dir output/genotype_run1/eqtl_allSNPs
+#   Rscript scripts/eqtl/04_run_eqtl/eqtl_run.R --base-dir output/eqtl_allSNPs
 # ------------------------------------------------------------
 
 # ---------------------------
@@ -36,7 +36,7 @@ get_arg <- function(flag, default = NULL) {
 
 has_flag <- function(flag) flag %in% args
 
-base_rel <- get_arg("--base-dir", "output/genotype_run1/eqtl")
+base_rel <- get_arg("--base-dir", "output/eqtl")
 NO_COV <- has_flag("--no-covariates")
 
 # ---------------------------
@@ -214,7 +214,7 @@ cat(
 # ------------------------------------------------------------
 # OUTPUTS (Default paths; can be changed with --base-dir)
 # ------------------------------------------------------------
-#   $REPO_ROOT/output/genotype_run1/eqtl/results/
+#   $REPO_ROOT/output/eqtl/results/
 #     - eqtl_all.tsv
 #     - eqtl_cis.tsv
 #     - eqtl_trans.tsv

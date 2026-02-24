@@ -7,12 +7,12 @@ that MatrixEQTL can load.
 
 Input (default)
 ---------------
-  $REPO_ROOT/output/genotype_run1/eqtl/Covariates.txt
+  $REPO_ROOT/output/eqtl/Covariates.txt
 
 Outputs
 -------
-  $REPO_ROOT/output/genotype_run1/eqtl/Covariates_numeric.txt
-  $REPO_ROOT/output/genotype_run1/eqtl/covariates_preprocess_summary.txt
+  $REPO_ROOT/output/eqtl/Covariates_numeric.txt
+  $REPO_ROOT/output/eqtl/covariates_preprocess_summary.txt
 
 Rules (matches your prior R logic)
 ----------------------------------
@@ -66,7 +66,7 @@ def main() -> int:
     if not repo_root:
         die("REPO_ROOT not set. Run: source scripts/00_config.sh")
 
-    base_eqtl = Path(repo_root) / "output/genotype_run1/eqtl"
+    base_eqtl = Path(repo_root) / "output/eqtl"
 
     in_path = Path(args.in_path) if args.in_path else (base_eqtl / "Covariates.txt")
     out_path = Path(args.out_path) if args.out_path else (base_eqtl / "Covariates_numeric.txt")

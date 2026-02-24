@@ -15,8 +15,8 @@ Prepare the final, aligned Matrix-eQTL matrices by:
 
 Default inputs
 --------------
-GE   : $REPO_ROOT/output/genotype_run1/eqtl/GE.txt
-SNP  : $REPO_ROOT/output/genotype_run1/eqtl/SNP.txt
+GE   : $REPO_ROOT/output/eqtl/GE.txt
+SNP  : $REPO_ROOT/output/eqtl/SNP.txt
 META : $REPO_ROOT/metadata/clinical_data.csv  (must contain 'sample_name')
 
 Default outputs (in eqtl dir)
@@ -215,7 +215,7 @@ def main() -> int:
     if not repo_root:
         die("REPO_ROOT not set. Run: source scripts/00_config.sh")
 
-    base_eqtl = Path(repo_root) / "output/genotype_run1/eqtl"
+    base_eqtl = Path(repo_root) / "output/eqtl"
 
     ge_path = Path(args.ge) if args.ge else (base_eqtl / "GE.txt")
     snp_path = Path(args.snp) if args.snp else (base_eqtl / "SNP.txt")

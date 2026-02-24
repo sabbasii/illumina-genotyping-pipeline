@@ -8,10 +8,10 @@ Convert a VCF-like TSV (e.g. target_gene_report.tsv) into Matrix-eQTL inputs:
 
 Defaults (REPO_ROOT required):
   Input:
-    output/genotype_run1/target_lists/target_gene_report.tsv
+    output/target_lists/target_gene_report.tsv
   Outputs:
-    output/genotype_run1/eqtl/SNP.txt
-    output/genotype_run1/eqtl/snpsloc.txt
+    output/eqtl/SNP.txt
+    output/eqtl/snpsloc.txt
 
 Optional:
   --subset N
@@ -63,8 +63,8 @@ def main() -> int:
     if not repo_root:
         die("REPO_ROOT not set. Run: source scripts/00_config.sh")
 
-    default_in = Path(repo_root) / "output/genotype_run1/target_lists/target_gene_report.tsv"
-    out_dir = Path(repo_root) / "output/genotype_run1/eqtl"
+    default_in = Path(repo_root) / "output/target_lists/target_gene_report.tsv"
+    out_dir = Path(repo_root) / "output/eqtl"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     snp_out_full = out_dir / "SNP.txt"
@@ -192,13 +192,13 @@ From the repo root (illumina-genotyping-pipeline/):
    python3 scripts/eqtl/01_build_inputs/make_snp_and_snpsloc_from_tsv.py
 
    Outputs:
-     output/genotype_run1/eqtl/SNP.txt
-     output/genotype_run1/eqtl/snpsloc.txt
+     output/eqtl/SNP.txt
+     output/eqtl/snpsloc.txt
 
 3) Subset-only outputs (FIRST N rows, e.g. 100)
    python3 scripts/eqtl/01_build_inputs/make_snp_and_snpsloc_from_tsv.py --subset 100
 
    Outputs:
-     output/genotype_run1/eqtl/SNP.subset100.txt
-     output/genotype_run1/eqtl/snpsloc.subset100.txt
+     output/eqtl/SNP.subset100.txt
+     output/eqtl/snpsloc.subset100.txt
 """

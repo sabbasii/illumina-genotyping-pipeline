@@ -76,4 +76,4 @@ if __name__ == "__main__":
 
 # Run
 # source scripts/00_config.sh
-# python scripts/eqtl/build_GE_from_expr.py
+# python scripts/eqtl/01_build_inputs/build_GE_from_expr.py

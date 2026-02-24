@@ -13,11 +13,11 @@ What this script does
 Inputs
 ------
 BCF:
-    output/genotype_run1/imputed/genotypes_processed.bcf
+    output/imputed/genotypes_processed.bcf
 
 Outputs
 -------
-output/genotype_run1/eqtl_allSNPs/
+output/eqtl_allSNPs/
 
 • SNP.txt
     Matrix eQTL SNP matrix (ALT allele counts)
@@ -49,8 +49,8 @@ if str(SCRIPTS_DIR) not in sys.path:
 from eqtl.utils.genotype_helpers import alt_count_from_gt, normalize_chr, stable_snpid
 
 # ---------- CONFIG (repo-relative) ----------
-BCF_REL = "output/genotype_run1/imputed/genotypes_processed.bcf"
-OUTDIR_REL = "output/genotype_run1/eqtl_allSNPs"
+BCF_REL = "output/imputed/genotypes_processed.bcf"
+OUTDIR_REL = "output/eqtl_allSNPs"
 SNP_OUT = "SNP.txt"
 SNPLOC_OUT = "snpsloc.txt"
 
